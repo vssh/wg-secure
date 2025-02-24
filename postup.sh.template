@@ -1,0 +1,20 @@
+# !/bin/bash
+
+[[AUTOMATED_VARIABLE_INSERTION]]
+
+iptables -t nat -I POSTROUTING -o $MASQUERADE_INTERFACE -j MASQUERADE -s $WIREGUARD_LAN
+
+# Add a wireguard chain to the FORWARD chain
+iptables -N $CHAIN_NAME
+iptables -A FORWARD -j $CHAIN_NAME
+
+# Accept related or established traffic
+iptables -A $CHAIN_NAME -o $WIREGUARD_INTERFACE -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+
+[[AUTOMATED_RULES_INSERTION]]
+
+# Drop everything else coming through the Wireguard interface
+iptables -A $CHAIN_NAME -i $WIREGUARD_INTERFACE -j DROP
+
+# Return to FORWARD chain
+iptables -A $CHAIN_NAME -j RETURN

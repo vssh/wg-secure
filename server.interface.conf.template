@@ -1,0 +1,6 @@
+[Interface]
+PrivateKey = [[SERVER_PRIVATE_KEY]]
+Address = [[SERVER_ADDRESS]]
+ListenPort = [[SERVER_PORT]]
+PostUp = [[POSTUP_PATH]]
+PostDown = [[POSTDOWN_PATH]]

@@ -1,0 +1,10 @@
+[Interface]
+PrivateKey = [[CLIENT_PRIVATE_KEY]]
+Address = [[CLIENT_ADDRESS]]
+DNS = [[DNS]]
+
+[Peer]
+PublicKey = [[SERVER_PUBLIC_KEY]]
+PresharedKey = [[PRESHARED_KEY]]
+Endpoint = [[ENDPOINT]]
+AllowedIPs = [[SERVER_ALLOWED_IPS]]

@@ -1,0 +1,4 @@
+[Peer]
+PublicKey = [[CLIENT_PUBLIC_KEY]]
+PresharedKey = [[PRESHARED_KEY]]
+AllowedIPs = [[CLIENT_ALLOWED_IPS]]

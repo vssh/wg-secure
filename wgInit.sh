@@ -1,0 +1,97 @@
+#! /bin/bash
+
+SCRIPT_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+ENV_PATH="${SCRIPT_PATH}/.env"
+UTILS_PATH="${SCRIPT_PATH}/utils"
+source $ENV_PATH
+NEW_LINE=$'\n'
+
+UTIL_GET_IP_FROM_SUBNET="${UTILS_PATH}/getIpFromSubnet.sh"
+
+if [ "$EUID" -ne 0 ]
+  then echo "Please run as root"
+  exit
+fi
+
+if [ -z $INTERFACE_NAME ]; then
+  echo "please provide interface name"
+  exit 1;
+fi
+
+CONFIG_PATH="${WG_PATH}/${INTERFACE_NAME}.conf"
+PRIVATE_KEY_PATH="${WG_PATH}/${PRIVATE_KEY_FILE}"
+PUBLIC_KEY_PATH="${WG_PATH}/${PUBLIC_KEY_FILE}"
+POSTUP_PATH="${WG_PATH}/${POSTUP_FILE}"
+POSTDOWN_PATH="${WG_PATH}/${POSTDOWN_FILE}"
+
+if [ -f $CONFIG_PATH ]; then
+  echo "config already exists"
+  exit 1;
+fi
+
+
+if [ -z $PRIVATE_KEY_PATH ]; then
+  echo "private key already exists"
+  exit 1;
+fi
+
+if [ -z $PUBLIC_KEY_PATH ]; then
+  echo "public key already exists"
+  exit 1;
+fi
+
+if [ -z $POSTUP_PATH ]; then
+  echo "postup script already exists"
+  exit 1;
+fi
+
+if [ -z $POSTDOWN_PATH ]; then
+  echo "postdown script already exists"
+  exit 1;
+fi
+
+SERVER_PRIVATE_KEY=$(wg genkey)
+SERVER_PUBLIC_KEY=$(echo $SERVER_PRIVATE_KEY | wg pubkey)
+SERVER_ADDRESS=$("$UTIL_GET_IP_FROM_SUBNET" "$VPN_SUBNET" "1")
+SERVER_ADDRESS="${SERVER_ADDRESS}/32"
+
+SERVER_INTERFACE=$(cat "${SCRIPT_PATH}/${SERVER_INTERFACE_TEMPLATE_FILE}")
+SERVER_INTERFACE="${SERVER_INTERFACE/'[[SERVER_PRIVATE_KEY]]'/${SERVER_PRIVATE_KEY}}"
+SERVER_INTERFACE="${SERVER_INTERFACE/'[[SERVER_PORT]]'/${SERVER_PORT}}"
+SERVER_INTERFACE="${SERVER_INTERFACE/'[[SERVER_ADDRESS]]'/${SERVER_ADDRESS}}"
+SERVER_INTERFACE="${SERVER_INTERFACE/'[[POSTUP_PATH]]'/${POSTUP_PATH}}"
+SERVER_INTERFACE="${SERVER_INTERFACE/'[[POSTDOWN_PATH]]'/${POSTDOWN_PATH}}"
+# echo "$SERVER_INTERFACE"
+
+WG_LAN_CIDR=$("$UTIL_GET_IP_FROM_SUBNET" "$VPN_SUBNET" "0")
+WG_LAN_CIDR="${WG_LAN_CIDR}/24"
+
+POSTUP_CONTENT=$(cat "${SCRIPT_PATH}/${POSTUP_TEMPLATE_FILE}")
+POSTUP_CONTENT="${POSTUP_CONTENT/'[[INTERFACE_NAME]]'/${INTERFACE_NAME}}"
+POSTUP_CONTENT="${POSTUP_CONTENT/'[[WIREGUARD_LAN]]'/${WG_LAN_CIDR}}"
+POSTUP_CONTENT="${POSTUP_CONTENT/'[[NETWORK_INTERFACE]]'/${NETWORK_INTERFACE}}"
+# echo "$POSTUP_CONTENT"
+
+POSTDOWN_CONTENT=$(cat "${SCRIPT_PATH}/${POSTDOWN_TEMPLATE_FILE}")
+POSTDOWN_CONTENT="${POSTDOWN_CONTENT/'[[INTERFACE_NAME]]'/${INTERFACE_NAME}}"
+POSTDOWN_CONTENT="${POSTDOWN_CONTENT/'[[WIREGUARD_LAN]]'/${WG_LAN_CIDR}}"
+POSTDOWN_CONTENT="${POSTDOWN_CONTENT/'[[NETWORK_INTERFACE]]'/${NETWORK_INTERFACE}}"
+# echo "$POSTDOWN_CONTENT"
+
+CLIENTS_CONTENT="# client_name;client_id;client_access;client_dns_passthrough"
+
+mkdir -p "${WG_PATH}/${CONFIGS_DIR}"
+echo "CLIENTS_CONTENT" > "${WG_PATH}/${CONFIGS_DIR}/${CLIENTS_FILE}"
+chmod -R go= "${WG_PATH}/${CONFIGS_DIR}"
+echo "$SERVER_PRIVATE_KEY" > "${WG_PATH}/${PRIVATE_KEY_FILE}"
+chmod go= "${WG_PATH}/${PRIVATE_KEY_FILE}"
+echo "$SERVER_PUBLIC_KEY" > "${WG_PATH}/${PUBLIC_KEY_FILE}"
+echo "$POSTUP_CONTENT" > "${WG_PATH}/${POSTUP_FILE}"
+chmod 744 "${WG_PATH}/${POSTUP_FILE}"
+echo "$POSTDOWN_CONTENT" > "${WG_PATH}/${POSTDOWN_FILE}"
+chmod 744 "${WG_PATH}/${POSTDOWN_FILE}"
+echo "$SERVER_INTERFACE" > "${WG_PATH}/${INTERFACE_NAME}.conf"
+chmod go= "${WG_PATH}/${INTERFACE_NAME}.conf"
+
+systemctl enable "wg-quick@${INTERFACE_NAME}"
+systemctl start "wg-quick@${INTERFACE_NAME}"
