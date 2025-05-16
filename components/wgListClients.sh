@@ -15,6 +15,6 @@ fi
 IP_PREFIX=$("$UTIL_GET_IP_FROM_SUBNET" "$VPN_SUBNET")
 CLIENTS_FILE_PATH="${WG_PATH}/${CONFIGS_DIR}/${CLIENTS_FILE}"
 while read line; do
-    id=$(awk -F ';' '{print $2}' <<< "$line")
-    echo -e $(sed "s/client_id/client_ip/; s/;1$/;true/; s/;0$/;false/;  s/;${id};/;${IP_PREFIX}${id};/; s/;/ -\t- /g; s/#//" <(echo $line))
+  id=$(awk -F ';' '{print $2}' <<< "$line")
+  echo -e $(sed "s/client_id/client_ip/; s/;1$/;true/; s/;0$/;false/;  s/;${id};/;${IP_PREFIX}${id};/; s/;/ -\t- /g; s/#//" <(echo $line))
 done < $CLIENTS_FILE_PATH

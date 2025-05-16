@@ -4,7 +4,7 @@ SCRIPT_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 ENV_PATH="${SCRIPT_PATH}/.env"
 UTILS_PATH="${SCRIPT_PATH}/utils"
 source $ENV_PATH
-UPDATE_POSTUP_SCRIPT="wgUpdatePostupScript.sh"
+UPDATE_POSTUP_SCRIPT="${SCRIPT_PATH}/wgUpdatePostupScript.sh"
 UTIL_REMOVE_LINES_FROM_FILE="${UTILS_PATH}/removeLinesFromFile.sh"
 
 if [ "$EUID" -ne 0 ]
@@ -44,8 +44,8 @@ fi
 $UTIL_REMOVE_LINES_FROM_FILE $SERVER_CONFIG_PATH $BEGIN_NUM $END_NUM
 
 if [[ $((CLIENT_LIST_POSITION)) -lt 1 ]]; then
-    echo "client lint entry not found"
-    exit 1;
+  echo "client lint entry not found"
+  exit 1;
 fi
 $UTIL_REMOVE_LINES_FROM_FILE $CLIENTS_FILE_PATH $CLIENT_LIST_POSITION
 
