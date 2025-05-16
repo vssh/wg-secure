@@ -6,6 +6,7 @@ source $ENV_PATH
 UTILS_PATH="${SCRIPT_PATH}/utils"
 TEMPLATES_PATH="${SCRIPT_PATH}/templates"
 UPDATE_POSTUP_SCRIPT="${SCRIPT_PATH}/wgUpdatePostupScript.sh"
+SHOW_CLIENT_SCRIPT="${SCRIPT_PATH}/wgClientShow.sh"
 NEW_LINE=$'\n'
 CLIENTS_LINE_BEGIN="LastId="
 ALLOWED_IPS_KEY="AllowedIPs = "
@@ -21,7 +22,7 @@ fi
 CLIENT_NAME=$1
 
 if [ -z "$CLIENT_NAME" ]; then
-  echo "you must give a client name"
+  echo "you must give a client name" >> /dev/stderr
   exit 1;
 fi
 
@@ -43,11 +44,11 @@ if [[ $CLIENT_ACCESS != $CLIENT_ACCESS_FULL && $CLIENT_ACCESS != $CLIENT_ACCESS_
   if  [[ $CUSTOM_ACCESS_INDEX == -1 ]]; then
     customAccessIndexMax=$((CLIENT_ACCESS_CUSTOM_TYPES-1))
     if [[ $CLIENT_ACCESS_CUSTOM_TYPES < 1 ]]; then 
-      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\" or \"$CLIENT_ACCESS_INTERNET\""
+      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\" or \"$CLIENT_ACCESS_INTERNET\"" >> /dev/stderr
     elif [[ $customAccessIndexMax == 0 ]]; then
-      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\""
+      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\"" >> /dev/stderr
     else
-      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\" - \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMax\""
+      echo "client access must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\" - \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMax\"" >> /dev/stderr
     fi
     exit 1;
   fi
@@ -57,7 +58,7 @@ CLIENT_DNS=$3
 if [[ $CLIENT_DNS == "" ]]; then
   CLIENT_DNS=$CLIENT_DNS_DEFAULT
 elif [[ $CLIENT_DNS != 0 && $CLIENT_DNS != 1 ]]; then
-  echo "client dns must be 0 or 1"
+  echo "client dns must be 0 or 1" >> /dev/stderr
   exit 1;
 fi
 
@@ -110,7 +111,7 @@ done < <(getClientNames)
 
 CLIENT_CONFIG_PATH="${WG_PATH}/${CONFIGS_DIR}/${CLIENT_NAME}.conf"
 if [ -f "$CLIENT_CONFIG_PATH" ]; then
-  echo "this client already exists"
+  echo "this client config already exists"
   exit 1;
 fi
 
@@ -131,14 +132,14 @@ for i in $(seq 2 254); do
 done
 
 if [ $CLIENT_ID -eq 0 ]; then
-  echo "ip space if full, too many clients"
+  echo "ip space if full, too many clients" >> /dev/stderr
   exit 1;
 fi
 
 SERVER_PUBLIC_KEY="$(cat $WG_PATH/${PUBLIC_KEY_FILE})"
 
 if [ -z "$SERVER_PUBLIC_KEY" ]; then
-  echo "please run init script first"
+  echo "please run init script first" >> /dev/stderr
   exit 1;
 fi
 
@@ -180,6 +181,14 @@ chmod go= "${WG_PATH}/${INTERFACE_NAME}.conf"
 echo "$CLIENTS_LIST_ENTRY" >> "$CLIENTS_FILE_PATH"
 chmod go= "$CLIENTS_FILE_PATH"
 
+echo "client \"$CLIENT_NAME\" added to configuration"
+
 source $UPDATE_POSTUP_SCRIPT
 
 systemctl restart "wg-quick@${INTERFACE_NAME}"
+
+echo
+source $SHOW_CLIENT_SCRIPT $CLIENT_NAME 0
+echo
+source $SHOW_CLIENT_SCRIPT $CLIENT_NAME 1
+

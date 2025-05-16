@@ -60,6 +60,8 @@ while read line; do
           CUSTOM_ACCESS_NUM_TOTAL=$(($CUSTOM_ACCESS_NUM_TOTAL+1))
         fi
       done
+    else
+      echo "unknown access type \"$access\" found, clients will be ignored" >> /dev/stderr
     fi
   fi
 done < $CLIENTS_FILE_PATH
@@ -157,6 +159,14 @@ do
       ports="${parts[1]}"
       port_parts=(${ports//,/ })
       ports_num=${#port_parts[@]}
+
+      ## if no destination ip found, stop processing rule and deny access
+      if [[ -z $ip ]]; then
+        appendToRules "${IPTABLES_CHAIN} -s \$${CUSTOM_ACCESS_VARS[$num]} -j DROP"
+        echo "WARN: $CLIENT_ACCESS_CUSTOM$num rule misformed, denying access" >> /dev/stderr
+        break
+      fi
+
       if [[ $ports_num == 0 ]]; then
         portsParam=""
       elif [[ $ports_num == 1 ]]; then

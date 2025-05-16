@@ -13,7 +13,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 if [ -z "$CLIENT_NAME" ]; then
-  echo "please provide a client name"
+  echo "please provide a client name" >> /dev/stderr
   exit 1;
 fi
 
@@ -21,7 +21,7 @@ fi
 CLIENT_CONFIG_PATH="${WG_PATH}/${CONFIGS_DIR}/${CLIENT_NAME}.conf"
 
 if [ ! -f "$CLIENT_CONFIG_PATH" ]; then
-  echo "this client config file does not exist"
+  echo "this client config file does not exist" >> /dev/stderr
   exit 1;
 fi
 

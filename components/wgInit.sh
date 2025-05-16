@@ -15,7 +15,7 @@ if [ "$EUID" -ne 0 ]
 fi
 
 if [ -z $INTERFACE_NAME ]; then
-  echo "please provide interface name"
+  echo "please provide interface name" >> /dev/stderr
   exit 1;
 fi
 
@@ -26,27 +26,27 @@ POSTUP_PATH="${WG_PATH}/${POSTUP_FILE}"
 POSTDOWN_PATH="${WG_PATH}/${POSTDOWN_FILE}"
 
 if [ -f $CONFIG_PATH ]; then
-  echo "config already exists"
+  echo "config already exists" >> /dev/stderr
   exit 1;
 fi
 
 if [ -f $PRIVATE_KEY_PATH ]; then
-  echo "private key already exists"
+  echo "private key already exists" >> /dev/stderr
   exit 1;
 fi
 
 if [ -f $PUBLIC_KEY_PATH ]; then
-  echo "public key already exists"
+  echo "public key already exists" >> /dev/stderr
   exit 1;
 fi
 
 if [ -f $POSTUP_PATH ]; then
-  echo "postup script already exists"
+  echo "postup script already exists" >> /dev/stderr
   exit 1;
 fi
 
 if [ -f $POSTDOWN_PATH ]; then
-  echo "postdown script already exists"
+  echo "postdown script already exists" >> /dev/stderr
   exit 1;
 fi
 
@@ -62,7 +62,7 @@ if [[ $CLIENT_ACCESS_DEFAULT != $CLIENT_ACCESS_FULL && $CLIENT_ACCESS_DEFAULT !=
 
   if  [[ $customeAccessValid == 0 ]]; then
     customAccessIndexMax=$((CLIENT_ACCESS_CUSTOM_TYPES-1))
-    echo "CLIENT_ACCESS_DEFAULT must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\" - \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMax\""
+    echo "CLIENT_ACCESS_DEFAULT must be \"$CLIENT_ACCESS_FULL\", \"$CLIENT_ACCESS_INTRANET\", \"$CLIENT_ACCESS_INTERNET\"  or \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMin\" - \"$CLIENT_ACCESS_CUSTOM$customAccessIndexMax\"" >> /dev/stderr
     exit 1;
   fi
 fi
@@ -72,7 +72,7 @@ do
   customAccessVar="CLIENT_CUSTOM_IP_PORT_$num"
   customAccessString=${!customAccessVar}
   if [[ -z $customAccessString ]]; then
-    echo "$customAccessVar must be defined in env file"
+    echo "$customAccessVar must be defined in env file" >> /dev/stderr
     exit 1;
   fi
 done
