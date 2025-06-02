@@ -1,7 +1,7 @@
 #! /bin/bash
 
 SCRIPT_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ENV_PATH="${SCRIPT_PATH}/.env"
+ENV_PATH="${SCRIPT_PATH}/../.env"
 source $ENV_PATH
 UTILS_PATH="${SCRIPT_PATH}/utils"
 TEMPLATES_PATH="${SCRIPT_PATH}/templates"
@@ -42,6 +42,9 @@ while read line; do
     id=$(awk -F ';' '{print $2}' <<< "$line")
     ip=$("${UTIL_GET_IP_FROM_SUBNET}" "$VPN_SUBNET" "$id")
     access=$(awk -F ';' '{print $3}' <<< "$line")
+    if [[ -z $id ]]; then
+      continue
+    fi
     if [[ $access == $CLIENT_ACCESS_FULL ]]; then
       FULL_ACCESS_IPS="${FULL_ACCESS_IPS}${ip},"
       FULL_ACCESS_NUM=$(($FULL_ACCESS_NUM+1))

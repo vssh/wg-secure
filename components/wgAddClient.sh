@@ -1,7 +1,7 @@
 #! /bin/bash
 
 SCRIPT_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ENV_PATH="${SCRIPT_PATH}/.env"
+ENV_PATH="${SCRIPT_PATH}/../.env"
 source $ENV_PATH
 UTILS_PATH="${SCRIPT_PATH}/utils"
 TEMPLATES_PATH="${SCRIPT_PATH}/templates"

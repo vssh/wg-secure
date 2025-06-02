@@ -1,13 +1,19 @@
 #! /bin/bash
 
 SCRIPT_PATH=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-ENV_PATH="${SCRIPT_PATH}/.env"
+ENV_PATH="${SCRIPT_PATH}/../.env"
 UTILS_PATH="${SCRIPT_PATH}/utils"
 TEMPLATES_PATH="${SCRIPT_PATH}/templates"
+UPDATE_POSTUP_SCRIPT="${SCRIPT_PATH}/wgUpdatePostupScript.sh"
 source $ENV_PATH
 NEW_LINE=$'\n'
 
 UTIL_GET_IP_FROM_SUBNET="${UTILS_PATH}/getIpFromSubnet.sh"
+
+if [ ! -f $ENV_PATH ]; then
+  echo "please create the env file" >> /dev/stderr
+  exit 1;
+fi
 
 if [ "$EUID" -ne 0 ]
   then echo "Please run as root"
@@ -119,6 +125,8 @@ echo "$POSTDOWN_CONTENT" > "${WG_PATH}/${POSTDOWN_FILE}"
 chmod 744 "${WG_PATH}/${POSTDOWN_FILE}"
 echo "$SERVER_INTERFACE" > "${WG_PATH}/${INTERFACE_NAME}.conf"
 chmod go= "${WG_PATH}/${INTERFACE_NAME}.conf"
+
+source $UPDATE_POSTUP_SCRIPT
 
 systemctl enable "wg-quick@${INTERFACE_NAME}"
 systemctl start "wg-quick@${INTERFACE_NAME}"

@@ -8,10 +8,11 @@ INIT_PATH="$COMPONENT_PATH/wgInit.sh"
 ADD_PATH="$COMPONENT_PATH/wgAddClient.sh"
 REMOVE_PATH="$COMPONENT_PATH/wgRemoveClient.sh"
 UPDATE_POSTUP_PATH="$COMPONENT_PATH/wgUpdatePostupScript.sh"
+CLEAR_ALL_PATH="$COMPONENT_PATH/wgClearAll.sh"
 
 help()
 {
-  scriptName="wg-manager"
+  scriptName="wg-secure"
   # Display Help
   echo "Usage instructions:"
   echo
@@ -39,6 +40,9 @@ help()
   echo "To remove an existing client:"
   echo "$scriptName remove clientName"
   echo "Remove a client with name clientName"
+  echo
+  echo "To clear the interface and all clients:"
+  echo "$scriptName clear-all"
   echo
   echo "To manually regenerate the firewall (postup) script:"
   echo "$scriptName update-firewall"
@@ -136,6 +140,14 @@ case $1 in
       exit 1;
     fi
     source $UPDATE_POSTUP_PATH
+  ;;
+  
+  clear-all)
+    if [ $# != 1 ]; then
+      echo "clear-all does not take any other arguments"
+      exit 1;
+    fi
+    source $CLEAR_ALL_PATH
   ;;
 
   *)
